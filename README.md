@@ -28,6 +28,5 @@ This project examines work engagement among Korean employees using secondary dat
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mjshim0220/psy8712-final/HEAD?urlpath=rstudio)
 
 # Link to Interactive Chart
-[![Shiny App](https://img.shields.io/badge/Shiny-App-blue?style=flat&logo=R)](https://github.com/mjshim0220/psy8712-final/assets/156954978/1738930b-f49e-4682-92c9-df7610e11a26)
-
+[![Shiny App](https://img.shields.io/badge/Shiny-App-blue?style=flat&logo=R)](https://mjshim0220.shinyapps.io/shiny/)
 
