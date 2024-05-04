@@ -2,3 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
+install.R
+runtime.txt
