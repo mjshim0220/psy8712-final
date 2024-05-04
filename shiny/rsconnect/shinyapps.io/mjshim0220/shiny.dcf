@@ -1,0 +1,10 @@
+name: shiny
+title:
+username: mjshim0220
+account: mjshim0220
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 11933665
+bundleId: 8576276
+url: https://mjshim0220.shinyapps.io/shiny/
+version: 1

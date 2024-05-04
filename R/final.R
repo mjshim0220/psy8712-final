@@ -6,6 +6,8 @@ library(broom)
 library(caret)
 library(parallel)
 library(doParallel)
+library(ggpubr)
+
 
 #Load the dataframe
 safe<-read_csv("/Users/mj/IN PROGRESS Research/R projects/psy8712-final/data/DATA_2020_6th_KWCS_eng_220210.csv")
@@ -37,27 +39,28 @@ data <- subset(data, !(wsituation11%in% c(7,8,9)))
 data <- data %>%
   rowwise() %>%
   mutate(engagement = mean(c_across(starts_with("weng")))) %>% 
-  mutate(sleep_q = mean(c_across(starts_with("sleep"))))
+  mutate(sleep_q = mean(c_across(starts_with("sleep")))) %>% 
+  mutate(engagement = 6-engagement) %>% 
+  mutate(sleep_q = 6 - sleep_q)
+
 
 data <- data %>% 
   rename(p_support = wsituation1) %>% 
   rename(m_support = wsituation2) %>% 
-  rename(justice = wsituation11)
+  rename(justice = wsituation11) 
 
-# 
-# data <- data %>% 
-#   mutate(shift = factor(wtime_length5, levels = c(1, 2), labels = c("shift", "fixed"))) %>% 
-#   mutate(format = emp_fptime, levels = c(1, 2), labels = c("full time", "part time")) %>% 
-#   mutate(edu = factor(edu, labels = c("lower than primary education", "Primary education", "Lower secondary education", "Upper secondary education", "Community college", "Bachelor", "Master/PhD"))) %>% 
-#   mutate(sidejob = factor(job1, levels = c("1","2","3"), labels = c("Single job holder", "Multiple job holder", "Multiple job holder"))) %>% 
-#   mutate(remote = factor(emp_place, levels = c("1","2"), labels = c("Remote workers", "Office workers")))
-# str(data)
+data <- data %>% 
+  mutate(engagement = 6-engagement) %>% 
+  mutate(sleep_q = 6 - sleep_q) %>% 
+  mutate(p_support = 6-p_support) %>% 
+  mutate(m_support = 6-m_support) %>% 
+  mutate(justice = 6-justice)
 
-# Remote workers vs. office workers engagment
-# Convert 'remote_worker' to a factor
+
 data$remote <- factor(data$emp_place, labels = c("Yes", "No"))
 
 ggplot(data, aes(y=engagement, x = remote, fill = remote)) +
+  labs(x = "Work mode",y = "Engagement", fill= "Do you work remotely?")+
   geom_boxplot() +
   theme_classic()
 
@@ -79,12 +82,12 @@ table_ds <- data.frame(
 print(table_ds)
 
 #Chart1
-hist_satisfaction <- ggplot(data, aes(x = engagement)) +
-  geom_histogram(fill = "skyblue", color = "black") +
+hist_eng <- ggplot(data, aes(x = engagement)) +
+  geom_histogram(binwidth = 0.5,fill = "skyblue", color = "black") +
   labs(title = "Histogram of Engagement",
        x = "Engagement",
        y = "Frequency")
-print(hist_satisfaction)
+print(hist_eng)
 
 #correlation between support from sleep quality and engagement
 plot1 <- ggplot(data = data_use, aes(x = sleep_q, y = engagement)) +
@@ -93,12 +96,9 @@ plot1 <- ggplot(data = data_use, aes(x = sleep_q, y = engagement)) +
   ggtitle("The Relationship between Sleep Quality and Engagement")
 print(plot1)
 
-#correation between perceived justice within the organization and engagement
-plot2 <- ggplot(data = data_use, aes(x = justice, y = engagement)) +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(x = "Perceived Justice", y = "Engagement") +
-  ggtitle("The Relationship between Perceived Justice within Organization and Engagement")
-print(plot2)
+cor.test(data_use$sleep_q, data_use$engagement, method=c("pearson"))
+
+
 
 # Set up parallel processing
 cl <- makeCluster(detectCores() - 1)
@@ -157,24 +157,30 @@ net_rmse<-cor(test$engagement, net_pred)^2
 rf_rmse<-cor(test$engagement, rf_pred)^2
 xgb_rmse<-cor(test$engagement, xgb_pred)^2
 
+stopCluster(cl)
+registerDoSEQ() #Stop parallization
+
+
 #Publication
 table2_tbl<-tibble(
-  algo = c( "OLS regression", "Elastic net", "Random forest", "eXtreme Gradient Boosting"),
+  Algorithm = c( "OLS regression", "Elastic net", "Random forest", "eXtreme Gradient Boosting"),
   cv_rsq= c(
-    round(ols_model$results$Rsquared[1],2),
-    round(elastic_net_model$results$Rsquared[1],2),
-    round(rf_model$results$Rsquared[1],2),
-    round(xgb_model$results$Rsquared[1],2)
+    round(ols_model$results$Rsquared[1],3),
+    round(elastic_net_model$results$Rsquared[1],3),
+    round(rf_model$results$Rsquared[1],3),
+    round(xgb_model$results$Rsquared[1],3)
   ),
   ho_rsq=c(
-    round(ols_rmse,2),
-    round(net_rmse,2),
-    round(rf_rmse,2),
-    round(xgb_rmse,2)
+    round(ols_rmse,3),
+    round(net_rmse,3),
+    round(rf_rmse,3),
+    round(xgb_rmse,3)
   )
 )
 
 table2_tbl
 
-
-
+# Publication
+write.csv(table_ds, "../out/table1.csv")
+ggsave("../figs/figure1.png", plot = hist_eng )
+ggsave("../figs/")
