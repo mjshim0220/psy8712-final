@@ -1,0 +1,11 @@
+install.packages(c(
+  "tidyverse",
+  "shiny",
+  "dplyr",
+  "rsconnect",
+  "broom",
+  "caret",
+  "parallel",
+  "dpParallel",
+  "ggplot2"
+))
